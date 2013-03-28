@@ -27,12 +27,15 @@ from .platforms.osx import BREW_INSTALLER
 from .platforms.pip import PIP_INSTALLER
 from .platforms.redhat import YUM_INSTALLER
 from .rep3 import download_targets_data
-from .sources_list import get_sources_list_dir, DataSourceMatcher, SourcesListLoader
+from .sources_list import get_sources_list_dir, \
+    DataSourceMatcher, SourcesListLoader
 from .lookup import RosdepLookup
 from .rospkg_loader import DEFAULT_VIEW_KEY
 
+
 class ValidationFailed(Exception):
     pass
+
 
 def call(command, pipe=None):
     """
@@ -48,6 +51,7 @@ def call(command, pipe=None):
     if pipe:
         return output
 
+
 def get_ubuntu_targets(rosdistro):
     """
     Get a list of Ubuntu distro codenames for the specified ROS
@@ -57,6 +61,7 @@ def get_ubuntu_targets(rosdistro):
     """
     targets_data = download_targets_data()
     return targets_data[rosdistro]
+
 
 def get_installer(installer_name):
     """ Expected installers APT_INSTALLER, YUM_INSTALLER, ..."""
@@ -75,13 +80,16 @@ default_installers = {
 def resolve_for_os(rosdep_key, view, installer, os_name, os_version):
     """
     Resolve rosdep key to dependencies.
-    
+
     :param os_name: OS name, e.g. 'ubuntu'
 
     :raises: :exc:`rosdep2.ResolutionError`
     """
     d = view.lookup(rosdep_key)
-    inst_key, rule = d.get_rule_for_platform(os_name, os_version, default_installers[os_name], APT_INSTALLER)
+    inst_key, rule = d.get_rule_for_platform(os_name,
+                                             os_version,
+                                             default_installers[os_name],
+                                             APT_INSTALLER)
     assert inst_key == APT_INSTALLER
     return installer.resolve(rule)
 
@@ -96,7 +104,8 @@ def get_catkin_view(rosdistro_name, os_name, os_version, update=True):
     """
     sources_list_dir = get_sources_list_dir()
     if not os.path.exists(sources_list_dir):
-        raise ValidationFailed("""rosdep database is not initialized, please run:
+        raise ValidationFailed(\
+"""rosdep database is not initialized, please run:
 \tsudo rosdep init
 """)
 
@@ -109,8 +118,8 @@ def get_catkin_view(rosdistro_name, os_name, os_version, update=True):
         raise ValidationFailed("""rosdep database does not have any sources.
 Please make sure you have a valid configuration in:
 \t%s
-"""%(sources_list_dir))
-    
+""" % (sources_list_dir))
+
     # for vestigial reasons, using the roskg loader, but we're only
     # actually using the backend db as resolution is not resource-name based
     lookup = RosdepLookup.create_from_rospkg(sources_loader=sources_loader)
