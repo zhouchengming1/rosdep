@@ -652,5 +652,5 @@ class RosdepLookup(object):
             # not much abstraction in the entry object
             if rosdep_name in entry.rosdep_data:
                 retval.append((view_name, entry.origin))
-            
+
         return retval
