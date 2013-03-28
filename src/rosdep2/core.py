@@ -31,9 +31,11 @@ import os
 import sys
 import traceback
 
+
 def rd_debug(s):
     if "ROSDEP_DEBUG" in os.environ:
         print(s)
+
 
 def print_bold(msg):
     """
@@ -41,10 +43,11 @@ def print_bold(msg):
     :param msg: message to print, ``str``
     """
     if sys.platform in ['win32']:
-        print('%s'%msg)  #windows console is terrifically boring 
+        print('%s' % msg)  # windows console is terrifically boring
     else:
-        print('\033[1m%s\033[0m'%msg)
-    
+        print('\033[1m%s\033[0m' % msg)
+
+
 class InvalidData(Exception):
     """
     Data is not in valid rosdep format.
@@ -54,9 +57,11 @@ class InvalidData(Exception):
         super(InvalidData, self).__init__(message)
         self.origin = origin
 
+
 class UnsupportedOs(Exception):
     pass
-    
+
+
 class RosdepInternalError(Exception):
 
     def __init__(self, e, message=None):
@@ -68,20 +73,22 @@ class RosdepInternalError(Exception):
 
     def __str__(self):
         return self.message
-        
+
+
 class DownloadFailure(Exception):
     """
     Failure downloading sources list data for I/O or other format reasons.
     """
     pass
 
+
 class InstallFailed(Exception):
 
     def __init__(self, failure=None, failures=None):
         """
         One of failure/failures must be set.
-        
-        :param failure: single (installer_key, message) tuple.  
+
+        :param failure: single (installer_key, message) tuple.
         :param failures: list of (installer_key, message) tuples
         """
         if failures is not None:
@@ -90,6 +97,7 @@ class InstallFailed(Exception):
             raise ValueError("failure is None")
         else:
             self.failures = [failure]
-    
+
     def __str__(self):
-        return '\n'.join(['%s: %s'%(key, message) for (key, message) in self.failures])
+        return '\n'.join(['%s: %s' % (key, message)
+                          for (key, message) in self.failures])
