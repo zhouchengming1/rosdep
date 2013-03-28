@@ -1,9 +1,9 @@
 # Copyright (c) 2011, Willow Garage, Inc.
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright
 #       notice, this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
@@ -12,7 +12,7 @@
 #     * Neither the name of the Willow Garage, Inc. nor the names of its
 #       contributors may be used to endorse or promote products derived from
 #       this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -41,11 +41,12 @@ from .core import InvalidData
 
 ROSDEP_YAML = 'rosdep.yaml'
 
+
 class RosdepLoader:
     """
-    Base API for loading rosdep information by package or stack name.  
+    Base API for loading rosdep information by package or stack name.
     """
-    
+
     def load_rosdep_yaml(self, yaml_contents, origin):
         """
         Utility routine for unmarshalling rosdep data encoded as YAML.
@@ -56,7 +57,8 @@ class RosdepLoader:
         try:
             return yaml.load(yaml_contents)
         except yaml.YAMLError as e:
-            raise InvalidData("Invalid YAML in [%s]: %s"%(origin, e), origin=origin)
+            raise InvalidData("Invalid YAML in [%s]: %s" % (origin, e),
+                              origin=origin)
 
     def load_view(self, view_name, rosdep_db, verbose=False):
         """
@@ -64,12 +66,13 @@ class RosdepLoader:
         loaded into rosdep_db, this method does nothing.
 
         :param view_name: name of ROS stack to load, ``str``
-        :param rosdep_db: database to load stack data into, :class:`RosdepDatabase`
+        :param rosdep_db: database to load stack data into,
+          :class:`RosdepDatabase`
 
         :raises: :exc:`InvalidData`
         :raises: :exc:`rospkg.ResourceNotFound` if view cannot be located
         """
-        raise NotImplementedError(view_name, rosdep_db, verbose) #pychecker
+        raise NotImplementedError(view_name, rosdep_db, verbose)  # pychecker
 
     def get_loadable_resources(self):
         raise NotImplementedError()
@@ -79,17 +82,20 @@ class RosdepLoader:
 
     def get_rosdeps(self, resource_name, implicit=True):
         """
-        :raises: :exc:`rospkg.ResourceNotFound` if *resource_name* cannot be found.
+        :raises: :exc:`rospkg.ResourceNotFound` if *resource_name*
+          cannot be found.
         """
-        raise NotImplementedError(resource_name, implicit) #pychecker
-    
+        raise NotImplementedError(resource_name, implicit)  # pychecker
+
     def get_view_key(self, resource_name):
         """
         Map *resource_name* to a view key.  In rospkg, this maps a ROS
         package name to a ROS stack name.  If *resource_name* is a ROS
         stack name, it returns the ROS stack name.
 
-        :returns: Name of view that *resource_name* is in, ``None`` if no associated view.
-        :raises: :exc:`rospkg.ResourceNotFound` if *resource_name* cannot be found.
+        :returns: Name of view that *resource_name* is in,
+          ``None`` if no associated view.
+        :raises: :exc:`rospkg.ResourceNotFound` if *resource_name*
+          cannot be found.
         """
-        raise NotImplementedError(resource_name) 
+        raise NotImplementedError(resource_name)

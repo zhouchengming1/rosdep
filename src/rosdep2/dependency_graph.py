@@ -1,9 +1,9 @@
 # Copyright (c) 2012, Willow Garage, Inc.
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright
 #       notice, this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
@@ -29,6 +29,7 @@
 
 from collections import defaultdict
 
+
 class Resolution(dict):
     """A default dictionary for use in the :class:`DependencyGraph`."""
     def __init__(self):
@@ -37,6 +38,7 @@ class Resolution(dict):
         self['install_keys'] = []
         self['dependencies'] = []
         self['is_root'] = True
+
 
 class DependencyGraph(defaultdict):
     """
@@ -61,7 +63,7 @@ class DependencyGraph(defaultdict):
     """
     def __init__(self):
         defaultdict.__init__(self, Resolution)
-    
+
     def detect_cycles(self, rosdep_key, traveled_keys):
         """
         Recursive function to detect cycles in the dependency graph.
@@ -98,12 +100,16 @@ class DependencyGraph(defaultdict):
         """
         Generates an ordered list of dependencies using the dependency graph.
 
-        :returns: *[(installer_key, [install_keys])]*, ``[(str, [str])]``.  *installer_key* is the key
-         that denotes which installed the accompanying *install_keys* are for.  *installer_key* are something 
-         like ``apt`` or ``homebrew``.  *install_keys* are something like ``boost`` or ``ros-fuerte-ros_comm``.
+        :returns: *[(installer_key, [install_keys])]*, ``[(str,[str])]``.
+        *installer_key* is the key that denotes which
+        installed the accompanying *install_keys* are for.
+        *installer_key* are something like ``apt`` or ``homebrew``.
+        *install_keys* are something like ``boost`` or
+        ``ros-fuerte-ros_comm``.
 
         :raises: :exc:`AssertionError` if a cycle is detected.
-        :raises: :exc:`KeyError` if an invalid rosdep_key is found in the dependency graph.
+        :raises: :exc:`KeyError` if an invalid rosdep_key is
+        found in the dependency graph.
         """
         # Validate the graph
         self.validate()
@@ -131,5 +137,6 @@ class DependencyGraph(defaultdict):
         uninstalled = []
         for dependency in self[key]['dependencies']:
             uninstalled.extend(self.__get_ordered_uninstalled(dependency))
-        uninstalled.append((self[key]['installer_key'], self[key]['install_keys']))
+        uninstalled.append((self[key]['installer_key'],
+                            self[key]['install_keys']))
         return uninstalled

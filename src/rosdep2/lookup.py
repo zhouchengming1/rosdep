@@ -1,9 +1,9 @@
 # Copyright (c) 2011, Willow Garage, Inc.
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright
 #       notice, this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
@@ -12,7 +12,7 @@
 #     * Neither the name of the Willow Garage, Inc. nor the names of its
 #       contributors may be used to endorse or promote products derived from
 #       this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -45,6 +45,7 @@ from .sources_list import SourcesListLoader
 
 from . import catkin_packages
 
+
 class RosdepDefinition(object):
     """
     Single rosdep dependency definition.  This data is stored as the
@@ -53,12 +54,13 @@ class RosdepDefinition(object):
     See REP 111, 'Multiple Package Manager Support for Rosdep' for a
     discussion of this raw format.
     """
-    
+
     def __init__(self, rosdep_key, data, origin="<dynamic>"):
         """
         :param rosdep_key: key/name of rosdep dependency
         :param data: raw rosdep data for a single rosdep dependency, ``dict``
-        :param origin: string that indicates where data originates from (e.g. filename)
+        :param origin: string that indicates where data originates from
+          (e.g. filename)
         """
         self.rosdep_key = rosdep_key
         self.data = data
@@ -71,24 +73,30 @@ class RosdepDefinition(object):
         exist with the same os_name, the first one wins.
 
         :param data: raw rosdep data for a single rosdep dependency, ``dict``
-        :param origin: string that indicates where this new data comes from (e.g. filename)
+        :param origin: string that indicates where this new data comes from
+          (e.g. filename)
         """
         for os_name, rules in new_data.items():
             if os_name not in self.data:
                 if verbose:
-                    print("[%s] adding rules for os [%s] to [%s]"%(origin, os_name, self.rosdep_key), file=sys.stderr)
+                    print("[%s] adding rules for os [%s] to [%s]" %
+                          (origin, os_name, self.rosdep_key), file=sys.stderr)
                 self.data[os_name] = rules
             elif verbose:
-                print("[%s] ignoring [%s] for os [%s], already loaded"%(origin, self.rosdep_key, os_name), file=sys.stderr)
+                print("[%s] ignoring [%s] for os [%s], already loaded" %
+                      (origin, self.rosdep_key, os_name), file=sys.stderr)
 
-    def get_rule_for_platform(self, os_name, os_version, installer_keys, default_installer_key):
+    def get_rule_for_platform(self, os_name, os_version,
+                              installer_keys, default_installer_key):
         """
-        Get installer_key and rule for the specified rule.  See REP 111 for precedence rules.
+        Get installer_key and rule for the specified rule.  
+        See REP 111 for precedence rules.
 
         :param os_name: OS name to get rule for
         :param os_version: OS version to get rule for
         :param installer_keys: Keys of installers for platform, ``[str]``
-        :param default_installer_key: Default installer key for platform, ``[str]``
+        :param default_installer_key: Default installer key for platform, 
+          ``[str]``
         :returns: (installer_key, rosdep_args_dict), ``(str, dict)``
 
         :raises: :exc:`ResolutionError` If no rule is available
@@ -98,12 +106,15 @@ class RosdepDefinition(object):
         data = self.data
 
         if type(data) != dict:
-            raise InvalidData("rosdep value for [%s] must be a dictionary"%(self.rosdep_key), origin=self.origin)
+            raise InvalidData("rosdep value for [%s] must be a dictionary" %
+                              (self.rosdep_key), origin=self.origin)
         if os_name not in data:
-            raise ResolutionError(rosdep_key, data, os_name, os_version, "No definition of [%s] for OS [%s]"%(rosdep_key, os_name))
+            raise ResolutionError(rosdep_key, data, os_name, os_version,
+                                  "No definition of [%s] for OS [%s]" %
+                                  (rosdep_key, os_name))
         data = data[os_name]
         return_key = default_installer_key
-        
+
         # REP 111: rosdep first interprets the key as a
         # PACKAGE_MANAGER. If this test fails, it will be interpreted
         # as an OS_VERSION_CODENAME.
@@ -125,23 +136,29 @@ class RosdepDefinition(object):
                     # version key must be present here for data to be valid
                     # dictionary value.
                     if os_version not in data:
-                        raise ResolutionError(rosdep_key, self.data, os_name, os_version, "No definition of [%s] for OS version [%s]"%(rosdep_key, os_version))
+                        raise ResolutionError(rosdep_key, self.data, 
+                                              os_name, os_version, 
+                                              "No definition of [%s] for OS version [%s]" %
+                                              (rosdep_key, os_version))
                     data = data[os_version]
                     if type(data) == dict:
                         for installer_key in installer_keys:
                             if installer_key in data:
                                 data = data[installer_key]
-                                return_key = installer_key                    
+                                return_key = installer_key
                                 break
 
         if type(data) not in (dict, list, type('str')):
-            raise InvalidData("rosdep OS definition for [%s:%s] must be a dictionary, string, or list: %s"%(self.rosdep_key, os_name, data), origin=self.origin)
+            raise InvalidData("rosdep OS definition for [%s:%s] must be a dictionary, string, or list: %s" %
+                              (self.rosdep_key, os_name, data), origin=self.origin)
 
         return return_key, data
 
     def __str__(self):
-        return "%s:\n%s"%(self.origin, yaml.dump(self.data, default_flow_style=False))
-    
+        return "%s:\n%s" % (self.origin,
+                            yaml.dump(self.data, default_flow_style=False))
+
+
 class ResolutionError(Exception):
 
     def __init__(self, rosdep_key, rosdep_data, os_name, os_version, message):
@@ -160,7 +177,9 @@ class ResolutionError(Exception):
 \trosdep key : %s
 \tOS name    : %s
 \tOS version : %s
-\tData: %s"""%(self.args[0], self.rosdep_key, self.os_name, self.os_version, pretty_data)
+\tData: %s""" % (self.args[0], self.rosdep_key,
+                 self.os_name, self.os_version, pretty_data)
+
 
 class RosdepView(object):
     """
@@ -169,14 +188,14 @@ class RosdepView(object):
     view merges entries for a particular stack.  This view can then be
     queries to lookup and resolve individual rosdep dependencies.
     """
-    
+
     def __init__(self, name):
         self.name = name
-        self.rosdep_defs = {} # {str: RosdepDefinition}
+        self.rosdep_defs = {}  # {str: RosdepDefinition}
 
     def __str__(self):
-        return '\n'.join(["%s: %s"%val for val in self.rosdep_defs.items()])
-            
+        return '\n'.join(["%s: %s" % val for val in self.rosdep_defs.items()])
+
     def lookup(self, rosdep_name):
         """
         :returns: :class:`RosdepDefinition`
@@ -189,7 +208,7 @@ class RosdepView(object):
         :returns: list of rosdep names in this view
         """
         return self.rosdep_defs.keys()
-        
+
     def merge(self, update_entry, override=False, verbose=False):
         """
         Merge rosdep database update into main database.  Merge rules
@@ -201,17 +220,23 @@ class RosdepView(object):
             always use rules from update_entry
         """
         if verbose:
-            print("view[%s]: merging from cache of [%s]"%(self.name, update_entry.origin))
+            print("view[%s]: merging from cache of [%s]" %
+                  (self.name, update_entry.origin))
         db = self.rosdep_defs
 
         for dep_name, dep_data in update_entry.rosdep_data.items():
             # convert data into RosdepDefinition model
-            update_definition = RosdepDefinition(dep_name, dep_data, update_entry.origin)
+            update_definition = RosdepDefinition(dep_name,
+                                                 dep_data,
+                                                 update_entry.origin)
             # First rule wins or override, no rule-merging.
             if override or not dep_name in db:
                 db[dep_name] = update_definition
             elif dep_name in db:
-                db[dep_name].reverse_merge(dep_data, update_entry.origin, verbose=verbose)
+                db[dep_name].reverse_merge(dep_data,
+                                           update_entry.origin,
+                                           verbose=verbose)
+
 
 def prune_catkin_packages(rosdep_keys, verbose=False):
     workspace_pkgs = catkin_packages.get_workspace_packages()
@@ -239,19 +264,20 @@ class RosdepLookup(object):
     on the filesystem will not be reflected if the rosdep information
     has already been loaded.
     """
-    
+
     def __init__(self, rosdep_db, loader):
         """
         :param loader: Loader to use for loading rosdep data by stack
           name, ``RosdepLoader``
-        :param rosdep_db: Database to load definitions into, :class:`RosdepDatabase`
+        :param rosdep_db: Database to load definitions into,
+          :class:`RosdepDatabase`
         """
         self.rosdep_db = rosdep_db
         self.loader = loader
-        
-        self._view_cache = {} # {str: {RosdepView}}
-        self._resolve_cache = {} # {str : (os_name, os_version, installer_key, resolution, dependencies)}
-        
+
+        self._view_cache = {}  # {str: {RosdepView}}
+        self._resolve_cache = {}  # {str : (os_name, os_version, installer_key, resolution, dependencies)}
+
         # some APIs that deal with the entire environment save errors
         # in to self.errors instead of raising them in order to be
         # robust to single-stack faults.
@@ -262,7 +288,7 @@ class RosdepLookup(object):
 
     def get_loader(self):
         return self.loader
-    
+
     def get_errors(self):
         """
         Retrieve error state for API calls that do not directly report
@@ -273,7 +299,7 @@ class RosdepLookup(object):
         :returns: List of exceptions, ``[Exception]``
         """
         return self.errors[:]
-    
+
     def get_rosdeps(self, resource_name, implicit=True):
         """
         Get rosdeps that *resource_name* (e.g. package) requires.
@@ -288,14 +314,14 @@ class RosdepLookup(object):
     def get_resources_that_need(self, rosdep_name):
         """
         :param rosdep_name: name of rosdep dependency
-        
+
         :returns: list of package names that require rosdep, ``[str]``
         """
         return [k for k in self.loader.get_loadable_resources() if rosdep_name in self.get_rosdeps(k, implicit=False)]
 
     @staticmethod
-    def create_from_rospkg(rospack=None, rosstack=None, 
-                           sources_loader=None, 
+    def create_from_rospkg(rospack=None, rosstack=None,
+                           sources_loader=None,
                            verbose=False):
         """
         Create :class:`RosdepLookup` based on current ROS package
@@ -323,7 +349,7 @@ class RosdepLookup(object):
         # individual sources it can load from.  SourcesListLoader
         # cannot do delayed evaluation of OS setting due to matcher.
         underlay_key = SourcesListLoader.ALL_VIEW_KEY
-            
+
         # Create the rospkg loader on top of the underlay
         loader = RosPkgLoader(rospack=rospack, rosstack=rosstack,
                               underlay_key=underlay_key)
@@ -335,19 +361,21 @@ class RosdepLookup(object):
         lookup._load_all_views(loader=sources_loader)
         # use dependencies to implement precedence
         view_dependencies = sources_loader.get_loadable_views()
-        rosdep_db.set_view_data(underlay_key, {}, view_dependencies, underlay_key)
+        rosdep_db.set_view_data(underlay_key, {},
+                                view_dependencies, underlay_key)
 
         return lookup
 
     def resolve_all(self, resources, installer_context, implicit=False):
         """
-        Resolve all the rosdep dependencies for *resources* using *installer_context*.
+        Resolve all the rosdep dependencies for *resources*
+        using *installer_context*.
 
         :param resources: list of resources (e.g. packages), ``[str]``
         :param installer_context: :class:`InstallerContext`
         :param implicit: Install implicit (recursive) dependencies of
             resources.  Default ``False``.
-        
+
         :returns: (resolutions, errors), ``([(str, [str])], {str: ResolutionError})``.  resolutions provides 
           an ordered list of resolution tuples.  A resolution tuple's first element is the installer 
           key (e.g.: apt or homebrew) and the second element is a list of opaque resolution values for that 
@@ -361,14 +389,17 @@ class RosdepLookup(object):
         # TODO: resolutions dictionary should be replaced with resolution model instead of mapping (undefined) keys.
         for resource_name in resources:
             try:
-                rosdep_keys = self.get_rosdeps(resource_name, implicit=implicit)
+                rosdep_keys = self.get_rosdeps(resource_name,
+                                               implicit=implicit)
                 if self.verbose:
-                    print("resolve_all: resource [%s] requires rosdep keys [%s]"%(resource_name, ', '.join(rosdep_keys)), file=sys.stderr)
+                    print("resolve_all: resource [%s] requires rosdep keys [%s]" % (resource_name, ', '.join(rosdep_keys)), file=sys.stderr)
                 rosdep_keys = prune_catkin_packages(rosdep_keys, self.verbose)
                 for rosdep_key in rosdep_keys:
                     try:
                         installer_key, resolution, dependencies = \
-                                       self.resolve(rosdep_key, resource_name, installer_context)
+                                       self.resolve(rosdep_key,
+                                                    resource_name,
+                                                    installer_context)
                         depend_graph[rosdep_key]['installer_key'] = installer_key
                         depend_graph[rosdep_key]['install_keys'] = list(resolution)
                         depend_graph[rosdep_key]['dependencies'] = list(dependencies)
@@ -378,7 +409,9 @@ class RosdepLookup(object):
                             if depend_rosdep_key in depend_graph:
                                 continue
                             installer_key, resolution, more_dependencies = \
-                                           self.resolve(depend_rosdep_key, resource_name, installer_context)
+                                           self.resolve(depend_rosdep_key,
+                                                        resource_name,
+                                                        installer_context)
                             dependencies.extend(more_dependencies)
                             depend_graph[depend_rosdep_key]['installer_key'] = installer_key
                             depend_graph[depend_rosdep_key]['install_keys'] = list(resolution)
@@ -390,8 +423,9 @@ class RosdepLookup(object):
                 errors[resource_name] = e
 
         try:
-            # TODO: I really don't like AssertionErrors here; this should be modeled as 'CyclicGraphError' 
-            # or something more explicit. No need to continue if this API errors.
+            # TODO: I really don't like AssertionErrors here; this
+            # should be modeled as 'CyclicGraphError' or something
+            # more explicit. No need to continue if this API errors.
             resolutions_flat = depend_graph.get_ordered_dependency_list()
         except AssertionError as e:
             raise InvalidData("cycle in dependency graph detected: %s"%(e))
@@ -464,7 +498,7 @@ class RosdepLookup(object):
         self._resolve_cache[rosdep_key] = os_name, os_version, view.name, installer_key, resolution, dependencies
 
         return installer_key, resolution, dependencies
-        
+
     def _load_all_views(self, loader):
         """
         Load all available view keys.  In general, this is equivalent
@@ -473,7 +507,7 @@ class RosdepLookup(object):
         they will be saved in the *errors* field.
 
         :param loader: override self.loader
-        :raises: :exc:`RosdepInternalError` 
+        :raises: :exc:`RosdepInternalError`
         """
         for resource_name in loader.get_loadable_views():
             try:
@@ -482,26 +516,26 @@ class RosdepLookup(object):
                 self.errors.append(e)
             except InvalidData as e:
                 self.errors.append(e)
-        
+
     def _load_view_dependencies(self, view_key, loader):
         """
         Initialize internal :exc:`RosdepDatabase` on demand.  Not
         thread-safe.
 
         :param view_key: name of view to load dependencies for.
-        
         :raises: :exc:`rospkg.ResourceNotFound` If view cannot be located
         :raises: :exc:`InvalidData` if view's data is invaid
         :raises: :exc:`RosdepInternalError`
         """
-        rd_debug("_load_view_dependencies[%s]"%(view_key))
+        rd_debug("_load_view_dependencies[%s]" % (view_key))
         db = self.rosdep_db
         if db.is_loaded(view_key):
             return
         try:
             loader.load_view(view_key, db, verbose=self.verbose)
             entry = db.get_view_data(view_key)
-            rd_debug("_load_view_dependencies[%s]: %s"%(view_key, entry.view_dependencies))            
+            rd_debug("_load_view_dependencies[%s]: %s" %
+                     (view_key, entry.view_dependencies))
             for d in entry.view_dependencies:
                 self._load_view_dependencies(d, loader)
         except InvalidData:
@@ -513,7 +547,7 @@ class RosdepLookup(object):
             raise
         except KeyError as e:
             raise RosdepInternalError(e)
-    
+
     def create_rosdep_view(self, view_name, view_keys, verbose=False):
         """
         :param view_name: name of view to create
@@ -529,9 +563,11 @@ class RosdepLookup(object):
             db_entry = db.get_view_data(view_key)
             view.merge(db_entry, verbose=verbose)
         if verbose:
-            print("View [%s], merged views:\n"%(view_name)+"\n".join([" * %s"%view_key for view_key in view_keys]), file=sys.stderr)
+            print("View [%s], merged views:\n" % (view_name) +
+                  "\n".join([" * %s" % view_key for view_key in view_keys]),
+                  file=sys.stderr)
         return view
-    
+
     def get_rosdep_view_for_resource(self, resource_name, verbose=False):
         """
         Get a :class:`RosdepView` for a specific ROS resource *resource_name*.
@@ -542,12 +578,13 @@ class RosdepLookup(object):
           package) to create view for, ``str``.
 
         :returns: :class:`RosdepView` for specific ROS resource
-          *resource_name*, or ``None`` if no view is associated with this resource.
-        
+          *resource_name*, or ``None`` if no view is associated
+          with this resource.
+
         :raises: :exc:`RosdepConflict` if view cannot be created due
           to conflict rosdep definitions.
         :raises: :exc:`rospkg.ResourceNotFound` if *view_key* cannot be located
-        :raises: :exc:`RosdepInternalError` 
+        :raises: :exc:`RosdepInternalError`
         """
         view_key = self.loader.get_view_key(resource_name)
         if not view_key:
@@ -555,18 +592,18 @@ class RosdepLookup(object):
             #for packages that are not in a stack.
             return None
         return self.get_rosdep_view(view_key, verbose=verbose)
-        
+
     def get_rosdep_view(self, view_key, verbose=False):
         """
         Get a :class:`RosdepView` associated with *view_key*.  Views
         can be queries to resolve rosdep keys to definitions.
 
         :param view_key: Name of rosdep view (e.g. ROS stack name), ``str``
-        
+
         :raises: :exc:`RosdepConflict` if view cannot be created due
           to conflict rosdep definitions.
         :raises: :exc:`rospkg.ResourceNotFound` if *view_key* cannot be located
-        :raises: :exc:`RosdepInternalError` 
+        :raises: :exc:`RosdepInternalError`
         """
         if view_key in self._view_cache:
             return self._view_cache[view_key]
@@ -582,7 +619,9 @@ class RosdepLookup(object):
             # in the future
             raise ResourceNotFound(str(e.args[0]))
         # load views in order
-        view = self.create_rosdep_view(view_key, dependencies + [view_key], verbose=verbose)
+        view = self.create_rosdep_view(view_key,
+                                       dependencies + [view_key],
+                                       verbose=verbose)
         self._view_cache[view_key] = view
         return view
 
@@ -601,9 +640,10 @@ class RosdepLookup(object):
         :param rosdep_name: name of rosdep to lookup
         :returns: list of (stack_name, origin) where rosdep is defined.
 
-        :raises: :exc:`RosdepInternalError` 
+        :raises: :exc:`RosdepInternalError`
         """
-        #TODOXXX: change this to return errors object so that caller cannot ignore
+        #TODOXXX: change this to return errors object so that caller
+        #cannot ignore
         self._load_all_views(self.loader)
         db = self.rosdep_db
         retval = []
