@@ -73,6 +73,23 @@ def register_ubuntu(context):
     context.set_default_os_installer_key(OS_UBUNTU, lambda self: APT_INSTALLER)
     context.set_os_version_type(OS_UBUNTU, OsDetect.get_codename)
 
+
+def apt_detect_installable(exec_fn=None):
+    """
+    Given a list of package, return the list of installable packages.
+
+    :param exec_fn: function to execute Popen and read stdout (for testing)
+    """
+    cmd = ['apt-cache', 'pkgnames']
+
+    if exec_fn is None:
+        exec_fn = read_stdout
+    std_out = exec_fn(cmd)
+    std_out = std_out.replace('\'', '')
+    pkg_list = std_out.split('\n')
+    return pkg_list
+
+
 def dpkg_detect(pkgs, exec_fn=None):
     """ 
     Given a list of package, return the list of installed packages.
@@ -110,7 +127,7 @@ class AptInstaller(PackageManagerInstaller):
     systems.
     """
     def __init__(self):
-        super(AptInstaller, self).__init__(dpkg_detect)
+        super(AptInstaller, self).__init__(dpkg_detect, detect_installable_fn=apt_detect_installable)
 
     def get_install_command(self, resolved, interactive=True, reinstall=False, quiet=False):
         packages = self.get_packages_to_install(resolved, reinstall=reinstall)

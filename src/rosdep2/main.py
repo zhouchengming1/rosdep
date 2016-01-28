@@ -318,6 +318,9 @@ def _rosdep_main(args):
                       "whether sudo is used for a specific installer, "
                       "e.g. '--as-root pip:false' or '--as-root \"pip:no homebrew:yes\"'. "
                       "Can be specified multiple times.")
+    parser.add_option("--database-check-status",
+                  dest='db_check_status', default=False, action="store_true",
+                  help="When printing the database test for installed and installable")
 
     options, args = parser.parse_args(args)
     if options.print_version:
@@ -695,7 +698,8 @@ def command_db(options):
     print("DB [key -> resolution]")
     # db does not leverage the resource-based API
     view = lookup.get_rosdep_view(DEFAULT_VIEW_KEY, verbose=options.verbose)
-    for rosdep_name in view.keys():
+
+    for rosdep_name in sorted(view.keys(), reverse=True):
         try:
             d = view.lookup(rosdep_name)
             inst_key, rule = d.get_rule_for_platform(os_name, os_version, installer_keys, default_key)
@@ -703,7 +707,15 @@ def command_db(options):
                 continue
             resolved = installer.resolve(rule)
             resolved_str = " ".join(resolved)
-            print ("%s -> %s"%(rosdep_name, resolved_str))
+            if not options.db_check_status:
+                print ("%s -> %s"%(rosdep_name, resolved_str))
+            else:
+                print ("%s -> %s  Installed: %s  Installable: %s" %
+                        (rosdep_name, resolved_str,
+                         installer.is_installed(resolved_str),
+                         installer.is_installable(resolved_str),
+                         )
+                       )
         except ResolutionError as e:
             errors.append(e)
 
@@ -847,6 +859,3 @@ _command_rosdep_args = ['what-needs', 'what_needs', 'where-defined', 'where_defi
 _command_no_args = ['update', 'init', 'db', 'fix-permissions']
 
 _commands = command_handlers.keys()
-
-
-

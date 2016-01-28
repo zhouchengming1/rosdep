@@ -311,14 +311,16 @@ class PackageManagerInstaller(Installer):
      - installer rosdep args spec can also include dependency specification with the key "depends"
     """
 
-    def __init__(self, detect_fn, supports_depends=False):
+    def __init__(self, detect_fn, supports_depends=False, detect_installable_fn=None):
         """
         :param supports_depends: package manager supports dependency key
         """
         self.detect_fn = detect_fn
+        self.detect_installable_fn = detect_installable_fn
         self.supports_depends = supports_depends
         self.as_root = True
         self.sudo_command = 'sudo -H'
+        self.installable_cache = []
 
     def elevate_priv(self, cmd):
         """
@@ -364,7 +366,17 @@ class PackageManagerInstaller(Installer):
             return list(set(resolved) - set(self.detect_fn(resolved)))
 
     def is_installed(self, resolved_item):
-        return not self.get_packages_to_install([resolved_item])
+        keys = resolved_item.split(' ')
+        return not self.get_packages_to_install(keys)
+
+    def is_installable(self, resolved):
+        if not self.detect_installable_fn:
+            raise NotImplementedError('detect_installable_fn not implemented ', resolved, this)
+        if not self.installable_cache:
+            self.installable_cache = self.detect_installable_fn()
+        keys = resolved.split(' ')
+        not_installable = [k for k in keys if k not in self.installable_cache]
+        return len(not_installable) == 0
 
     def get_install_command(self, resolved, interactive=True, reinstall=False, quiet=False):
         raise NotImplementedError('subclasses must implement', resolved, interactive, reinstall, quiet)
