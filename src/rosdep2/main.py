@@ -698,7 +698,10 @@ def command_db(options):
     print("OS NAME: %s"%os_name)
     print("OS VERSION: %s"%os_version)
     errors = []
-    print("DB [key -> installer: resolution]")
+    if options.db_check_status:
+        print("DB [key -> installer: resolution]")
+    else:
+        print("DB -> resolution]")
     # db does not leverage the resource-based API
     view = lookup.get_rosdep_view(DEFAULT_VIEW_KEY, verbose=options.verbose)
 
@@ -715,7 +718,7 @@ def command_db(options):
             resolved = installer.resolve(rule)
             resolved_str = " ".join(resolved)
             if not options.db_check_status:
-                print ("%s -> %s: %s"%(rosdep_name, inst_key, resolved_str))
+                print ("%s -> %s" % (rosdep_name, resolved_str))
             else:
                 installable = installer.is_installable(resolved_str)
                 print ("%s -> %s: %s --- Installed: %s  Installable: %s" %
