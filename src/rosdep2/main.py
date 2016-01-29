@@ -319,8 +319,11 @@ def _rosdep_main(args):
                       "e.g. '--as-root pip:false' or '--as-root \"pip:no homebrew:yes\"'. "
                       "Can be specified multiple times.")
     parser.add_option("--database-check-status",
-                  dest='db_check_status', default=False, action="store_true",
-                  help="When printing the database test for installed and installable")
+                      dest='db_check_status', default=False, action="store_true",
+                      help="When printing the database test for installed and installable")
+    parser.add_option("--no-rosdistro",
+                      dest='use_rosdistro', default=True, action="store_false",
+                      help="When updating the rules file do not use the rosdistro entries.")
 
     options, args = parser.parse_args(args)
     if options.print_version:
@@ -545,7 +548,8 @@ def command_update(options):
             # nothing we wanna do under Windows
             pass
         update_sources_list(success_handler=update_success_handler,
-                            error_handler=update_error_handler)
+                            error_handler=update_error_handler,
+                            use_rosdistro=options.use_rosdistro)
         print("updated cache in %s"%(sources_cache_dir))
     except InvalidData as e:
         print("ERROR: invalid sources list file:\n\t%s"%(e), file=sys.stderr)

@@ -415,7 +415,8 @@ def _generate_key_from_urls(urls):
 
 
 def update_sources_list(sources_list_dir=None, sources_cache_dir=None,
-                        success_handler=None, error_handler=None):
+                        success_handler=None, error_handler=None,
+                        use_rosdistro=True):
     """
     Re-downloaded data from remote sources and store in cache.  Also
     update the cache index based on current sources.
@@ -459,16 +460,17 @@ def update_sources_list(sources_list_dir=None, sources_cache_dir=None,
 
     # Additional sources for ros distros
     # In compliance with REP137 and REP143
-    print('Query rosdistro index %s' % get_index_url())
-    for dist_name in sorted(get_index().distributions.keys()):
-        print('Add distro "%s"' % dist_name)
-        rds = RosDistroSource(dist_name)
-        rosdep_data = get_gbprepo_as_rosdep_data(dist_name)
-        # dist_files can either be a string (single filename) or a list (list of filenames)
-        dist_files = get_index().distributions[dist_name]['distribution']
-        key = _generate_key_from_urls(dist_files)
-        retval.append((rds, write_cache_file(sources_cache_dir, key, rosdep_data)))
-        sources.append(rds)
+    if use_rosdistro:
+        print('Query rosdistro index %s' % get_index_url())
+        for dist_name in sorted(get_index().distributions.keys()):
+            print('Add distro "%s"' % dist_name)
+            rds = RosDistroSource(dist_name)
+            rosdep_data = get_gbprepo_as_rosdep_data(dist_name)
+            # dist_files can either be a string (single filename) or a list (list of filenames)
+            dist_files = get_index().distributions[dist_name]['distribution']
+            key = _generate_key_from_urls(dist_files)
+            retval.append((rds, write_cache_file(sources_cache_dir, key, rosdep_data)))
+            sources.append(rds)
 
     # Create a combined index of *all* the sources.  We do all the
     # sources regardless of failures because a cache from a previous
