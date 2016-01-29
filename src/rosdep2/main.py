@@ -690,41 +690,51 @@ def command_db(options):
         default_key = installer_context.get_default_os_installer_key(os_name)
     except KeyError:
         raise UnsupportedOs(os_name, installer_context.get_os_keys())
-    installer = installer_context.get_installer(default_key)
 
     print("OS NAME: %s"%os_name)
     print("OS VERSION: %s"%os_version)
     errors = []
-    print("DB [key -> resolution]")
+    print("DB [key -> installer: resolution]")
     # db does not leverage the resource-based API
     view = lookup.get_rosdep_view(DEFAULT_VIEW_KEY, verbose=options.verbose)
 
-    for rosdep_name in sorted(view.keys(), reverse=True):
+    installers = {}
+    for rosdep_name in sorted(view.keys()):
         try:
             d = view.lookup(rosdep_name)
             inst_key, rule = d.get_rule_for_platform(os_name, os_version, installer_keys, default_key)
             if options.filter_for_installers and inst_key not in options.filter_for_installers:
                 continue
+            if inst_key not in installers.keys():
+                installers[inst_key] = installer_context.get_installer(inst_key)
+            installer = installers[inst_key]
             resolved = installer.resolve(rule)
             resolved_str = " ".join(resolved)
             if not options.db_check_status:
-                print ("%s -> %s"%(rosdep_name, resolved_str))
+                print ("%s -> %s: %s"%(rosdep_name, inst_key, resolved_str))
             else:
-                print ("%s -> %s  Installed: %s  Installable: %s" %
-                        (rosdep_name, resolved_str,
+                installable = installer.is_installable(resolved_str)
+                print ("%s -> %s: %s --- Installed: %s  Installable: %s" %
+                        (rosdep_name,
+                         inst_key,
+                         resolved_str,
                          installer.is_installed(resolved_str),
-                         installer.is_installable(resolved_str),
+                         installable,
                          )
                        )
+                if not installable:
+                    errors.append('%s detected as uninstallable via installer: %s' %
+                        (resolved_str, inst_key))
         except ResolutionError as e:
             errors.append(e)
 
     #TODO: add command-line option for users to be able to see this.
     #This is useful for platform bringup, but useless for most users
     #as the rosdep db contains numerous, platform-specific keys.
-    if 0: 
+    if options.db_check_status: 
         for error in errors:
             print("WARNING: %s"%(error_to_human_readable(error)), file=sys.stderr)
+    return len(errors)
 
 def _print_lookup_errors(lookup):
     for error in lookup.get_errors():

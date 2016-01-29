@@ -371,7 +371,7 @@ class PackageManagerInstaller(Installer):
 
     def is_installable(self, resolved):
         if not self.detect_installable_fn:
-            raise NotImplementedError('detect_installable_fn not implemented ', resolved, this)
+            raise NotImplementedError('detect_installable_fn not implemented ', resolved)
         if not self.installable_cache:
             self.installable_cache = self.detect_installable_fn()
         keys = resolved.split(' ')

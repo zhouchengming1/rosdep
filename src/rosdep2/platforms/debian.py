@@ -76,7 +76,7 @@ def register_ubuntu(context):
 
 def apt_detect_installable(exec_fn=None):
     """
-    Given a list of package, return the list of installable packages.
+    Return the list of installable packages.
 
     :param exec_fn: function to execute Popen and read stdout (for testing)
     """

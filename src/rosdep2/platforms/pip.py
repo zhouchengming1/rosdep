@@ -52,6 +52,29 @@ def is_pip_installed():
         return False
 
 
+def pip_installable(pkg=None, exec_fn=None):
+    """
+    Return the list of installable packages.
+
+    :param exec_fn: function to execute Popen and read stdout (for testing)
+    """
+    query = pkg if pkg else '*'
+    cmd = ['pip', 'search', query]
+    pkg_list = []
+    if exec_fn is None:
+        exec_fn = read_stdout
+    std_out = exec_fn(cmd)
+    std_out = std_out.replace('\'', '')
+    lines = std_out.split('\n')
+    for l in lines:
+        elements = l.split()
+        if len(elements) > 1 and elements[1] == '-':
+            pkg_list.append(elements[0])
+        # else:
+        #     print("failed to match %s" % elements)
+    return pkg_list
+
+
 def pip_detect(pkgs, exec_fn=None):
     """
     Given a list of package, return the list of installed packages.
@@ -98,7 +121,7 @@ class PipInstaller(PackageManagerInstaller):
     """
 
     def __init__(self):
-        super(PipInstaller, self).__init__(pip_detect, supports_depends=True)
+        super(PipInstaller, self).__init__(pip_detect, supports_depends=True, detect_installable_fn=pip_installable)
 
     def get_install_command(self, resolved, interactive=True, reinstall=False, quiet=False):
         if not is_pip_installed():
@@ -108,3 +131,12 @@ class PipInstaller(PackageManagerInstaller):
             return []
         else:
             return [self.elevate_priv(['pip', 'install', '-U', p]) for p in packages]
+
+    def is_installable(self, resolved):
+        ### pip search '*' does not return all packages for some reason it even returns less than pip search v
+        ### Overriding this method for pip searches
+        keys = resolved.split(' ')
+        not_installable = [k for k in keys if not pip_installable(k)]
+        if not_installable:
+            print("not installable: %s from:\n %s" % (not_installable, sorted(self.installable_cache)))
+        return len(not_installable) == 0
