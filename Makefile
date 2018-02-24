@@ -1,6 +1,5 @@
 .PHONY: all setup clean_dist distro clean install testsetup test
 
-NAME='rosdep'
 VERSION=`python setup.py -V`
 
 all:
