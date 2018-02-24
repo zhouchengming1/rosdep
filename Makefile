@@ -1,6 +1,5 @@
 .PHONY: all setup clean_dist distro clean install testsetup test
 
-	echo "building version ${VERSION}"
 
 clean_dist:
 	-rm -f MANIFEST
