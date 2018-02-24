@@ -1,6 +1,5 @@
 .PHONY: all setup clean_dist distro clean install testsetup test
 
-
 clean_dist:
 	-rm -f MANIFEST
 	-rm -rf dist
